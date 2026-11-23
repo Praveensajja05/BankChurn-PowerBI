@@ -1,0 +1,23 @@
+-- Power BI Data Model: 18 DAX Measures & 11 Calculated Columns
+
+Total Customers = COUNTROWS(BankChurn)
+Churned Customers = CALCULATE(COUNTROWS(BankChurn), BankChurn[Exited] = 1)
+Retained Customers = CALCULATE(COUNTROWS(BankChurn), BankChurn[Exited] = 0)
+Churn Rate % = DIVIDE([Churned Customers], [Total Customers], 0)
+Retention Rate % = 1 - [Churn Rate %]
+
+Total Deposit Balance = SUM(BankChurn[Balance])
+Balance at Risk = CALCULATE(SUM(BankChurn[Balance]), BankChurn[Exited] = 1)
+Remaining Deposits = CALCULATE(SUM(BankChurn[Balance]), BankChurn[Exited] = 0)
+Lost Balance Share % = DIVIDE([Balance at Risk], [Total Deposit Balance], 0)
+Avg Customer Balance = AVERAGE(BankChurn[Balance])
+
+Active Customers = CALCULATE(COUNTROWS(BankChurn), BankChurn[IsActiveMember] = 1)
+Inactive Customers = CALCULATE(COUNTROWS(BankChurn), BankChurn[IsActiveMember] = 0)
+Active Churn Rate % = CALCULATE([Churn Rate %], BankChurn[IsActiveMember] = 1)
+Inactive Churn Rate % = CALCULATE([Churn Rate %], BankChurn[IsActiveMember] = 0)
+Activity Churn Delta = [Inactive Churn Rate %] - [Active Churn Rate %]
+
+High Risk Active Customers = CALCULATE([Retained Customers], BankChurn[Risk Tier] = "High")
+Target Retention Pool EUR = CALCULATE([Remaining Deposits], BankChurn[Risk Tier] IN {"High", "Medium"}, BankChurn[IsActiveMember] = 1)
+Germany Target Pool EUR = CALCULATE([Target Retention Pool EUR], BankChurn[Geography] = "Germany")
